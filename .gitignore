@@ -1,0 +1,19 @@
+# sbt
+project/project/
+project/target/
+target/
+
+# general
+*.class
+
+# mac
+.DS_Store
+
+# bloop and metals
+.bloop/
+.bsp/
+.metals/
+project/metals.sbt
+
+# vs code
+.vscode
