@@ -35,6 +35,7 @@ class OrdererApp(config: AppConfig) {
     // SET UP DB LAYER
 
     // todo make this more configurable
+    // TODO use ENV for db config resolution.
     val db = Database.forConfig("postgres")
     
     val ordersDb = new OrderDao(db)

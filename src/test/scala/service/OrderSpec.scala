@@ -10,7 +10,7 @@ import scala.concurrent.Future
 import database.daos.OrderDao
 import orderer.OrderServiceDependencies
 import service.models.{MakeOrderReq, DishTypeName}
-import database.daos.{Order => DbOrder}
+import database.daos.{Order => DbOrder, OrderOverrides => DbOrderOverrides, OrderFilters => DbOrderFilters}
 
 class TestClock extends Clock {
     def now(): LocalDateTime = LocalDateTime.of(2022, 11, 7, 10, 30)
@@ -85,6 +85,111 @@ class OrdersSpec extends AnyWordSpec with Matchers with MockFactory with ScalaFu
 
             val ids = orders.makeOrders(Seq(req1, req2))
             ids.futureValue should equal(Seq(1, 2))
+        }
+
+        "fulfill an order" in {
+            val id = 3
+            val overrides = DbOrderOverrides(
+                Some(true),
+                Some(LocalDateTime.of(2022, 11, 7, 10, 30)),
+                None,
+                None
+            )
+            (mockDb.update _).expects(id, overrides).returning(Future.successful(1))
+
+            val returnedId = orders.fulfillOrder(id)
+            returnedId.futureValue should equal(1)
+        }
+
+        "should get orders by table number" in {
+            val tableNumber = 1
+
+            val filters = DbOrderFilters(
+                Some(false),
+                Some(false),
+                Some(tableNumber)
+            )
+
+            val dbOrder = DbOrder(
+                1,
+                DishTypeName.ChickenNuggets,
+                LocalDateTime.of(2022, 11, 7, 10, 30),
+                LocalDateTime.of(2022, 11, 7, 11, 0),
+                tableNumber,
+                false,
+                None,
+                false,
+                None
+            )
+
+            (mockDb.readAll _).expects(filters).returning(Future.successful(Seq(dbOrder)))
+
+            val returnedOrders = orders.getOrdersByTableNumber(tableNumber).futureValue
+            returnedOrders.head should have (
+                'id (dbOrder.id),
+                'dishTypeName (dbOrder.dishTypeName),
+                'orderTime (dbOrder.orderTime),
+                'expectedTime (dbOrder.expectedTime),
+                'tableNumber (dbOrder.tableNumber),
+                'fulfilled (dbOrder.fulfilled),
+                'fulfilledTime (dbOrder.fulfilledTime),
+                'cancelled (dbOrder.cancelled),
+                'cancelledTime (dbOrder.cancelledTime),
+            )
+        }
+
+        "should get order by id" in {
+            val id = 1
+
+            val dbOrder = DbOrder(
+                1,
+                DishTypeName.ChickenNuggets,
+                LocalDateTime.of(2022, 11, 7, 10, 30),
+                LocalDateTime.of(2022, 11, 7, 11, 0),
+                4,
+                false,
+                None,
+                false,
+                None
+            )
+
+            (mockDb.read _).expects(id).returning(Future.successful(Some(dbOrder)))
+
+            val returnedOrder = orders.getOrdersById(id).futureValue
+            returnedOrder should have (
+                'id (dbOrder.id),
+                'dishTypeName (dbOrder.dishTypeName),
+                'orderTime (dbOrder.orderTime),
+                'expectedTime (dbOrder.expectedTime),
+                'tableNumber (dbOrder.tableNumber),
+                'fulfilled (dbOrder.fulfilled),
+                'fulfilledTime (dbOrder.fulfilledTime),
+                'cancelled (dbOrder.cancelled),
+                'cancelledTime (dbOrder.cancelledTime),
+            )
+        }
+
+        "should throw exception if order by id returns None" in {
+            val id = 1
+
+            val dbOrder = DbOrder(
+                1,
+                DishTypeName.ChickenNuggets,
+                LocalDateTime.of(2022, 11, 7, 10, 30),
+                LocalDateTime.of(2022, 11, 7, 11, 0),
+                4,
+                false,
+                None,
+                false,
+                None
+            )
+
+            (mockDb.read _).expects(id).returning(Future.successful(None))
+
+             the [Exception] thrownBy {
+                orders.getOrdersById(id).futureValue
+                // TODO fix this so it doesnt have ot show the future part of the error.
+            } should have message "The future returned an exception of type: java.lang.Exception, with message: Attempting to get order that does not exist."
         }
     }
 }
