@@ -11,8 +11,7 @@ trait Dao[T, O, F] {
 	// using the dao type as the parameter to save time
 	def insert(data: T): Future[Int]
 
-	// delete should return 
-	def delete(id: Int) : Future[Int]
+	def insertAll(items: Seq[T]): Future[Seq[Int]]
 
 	// update should return the ID
 	// using the dao type as the parameter for overrides to save time

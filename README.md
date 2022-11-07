@@ -12,12 +12,3 @@ fulfilled bool
 cancelled bool
 fulfilled_time
 cancelled_time
-
-### item_type
-id
-item_type_name
-cooking_time
-
-### item_type_name
-CHICKEN
-FRIES

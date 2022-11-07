@@ -24,17 +24,17 @@ class OrdersSpec extends AnyWordSpec with SequentialNestedSuiteExecution with Be
         db.close()
     }
     
-    val fulfilledOrder: Order = Order(4, 3, "Chicken nuggets", LocalDateTime.of(2022, 11, 7, 10, 30), LocalDateTime.of(2022, 11, 7, 10, 30), 6, true, Some(LocalDateTime.of(2022, 11, 7, 10, 30)), false, None)
-    val cancelledOrderTable5: Order = Order(2, 4, "Fries",  LocalDateTime.of(2022, 11, 7, 10, 30), LocalDateTime.of(2022, 11, 7, 10, 30), 5, false, Some(LocalDateTime.of(2022, 11, 7, 10, 30)), true, Some(LocalDateTime.of(2022, 11, 7, 10, 30)))
-    val cancelledOrderTable6: Order = Order(3, 4, "Fries",  LocalDateTime.of(2022, 11, 7, 10, 30), LocalDateTime.of(2022, 11, 7, 10, 30), 6, false, Some(LocalDateTime.of(2022, 11, 7, 10, 30)), true, Some(LocalDateTime.of(2022, 11, 7, 10, 30)))
+    val fulfilledOrder: Order = Order(3, "Chicken nuggets", LocalDateTime.of(2022, 11, 7, 10, 30), LocalDateTime.of(2022, 11, 7, 10, 30), 6, true, Some(LocalDateTime.of(2022, 11, 7, 10, 30)), false, None)
+    val cancelledOrderTable5: Order = Order(4, "Fries",  LocalDateTime.of(2022, 11, 7, 10, 30), LocalDateTime.of(2022, 11, 7, 10, 30), 5, false, Some(LocalDateTime.of(2022, 11, 7, 10, 30)), true, Some(LocalDateTime.of(2022, 11, 7, 10, 30)))
+    val cancelledOrderTable6: Order = Order(5, "Fries",  LocalDateTime.of(2022, 11, 7, 10, 30), LocalDateTime.of(2022, 11, 7, 10, 30), 6, false, Some(LocalDateTime.of(2022, 11, 7, 10, 30)), true, Some(LocalDateTime.of(2022, 11, 7, 10, 30)))
 
     // the interpolation is not working -.-
-    // def orderToSqlInsertion (order: Order) : DBIO[Int] = sqlu"insert into orders values (${order.id}, ${order.dishTypeId}, '${order.dishTypeName}', '${order.orderTime.toString()}', '${order.expectedTime.toString()}', ${order.tableNumber}, ${order.fulfilled}, '${order.fulfilledTime.toString()}', ${order.cancelled}, '${order.cancelledTime.toString()}')"
-    val fulfilledOrderSql = sqlu"insert into orders values(4, 3, 'Chicken nuggets', '2022-11-07 10:30:00', '2022-11-07 10:30:00', 6, true, '2022-11-07 10:30:00', false, null)"
-    val cancelledOrderTable5Sql = sqlu"insert into orders values(2, 4, 'Fries', '2022-11-07 10:30:00', '2022-11-07 10:30:00', 5, false, '2022-11-07 10:30:00', true, '2022-11-07 10:30:00')"
-    val cancelledOrderTable6Sql = sqlu"insert into orders values(3, 4, 'Fries', '2022-11-07 10:30:00', '2022-11-07 10:30:00', 6, false, '2022-11-07 10:30:00', true, '2022-11-07 10:30:00')"
+    // def orderToSqlInsertion (order: Order) : DBIO[Int] = sqlu"insert into orders values (${order.id},'${order.dishTypeName}', '${order.orderTime.toString()}', '${order.expectedTime.toString()}', ${order.tableNumber}, ${order.fulfilled}, '${order.fulfilledTime.toString()}', ${order.cancelled}, '${order.cancelledTime.toString()}')"
+    val fulfilledOrderSql = sqlu"insert into orders values(3, 'Chicken nuggets', '2022-11-07 10:30:00', '2022-11-07 10:30:00', 6, true, '2022-11-07 10:30:00', false, null)"
+    val cancelledOrderTable5Sql = sqlu"insert into orders values(4, 'Fries', '2022-11-07 10:30:00', '2022-11-07 10:30:00', 5, false, '2022-11-07 10:30:00', true, '2022-11-07 10:30:00')"
+    val cancelledOrderTable6Sql = sqlu"insert into orders values(5, 'Fries', '2022-11-07 10:30:00', '2022-11-07 10:30:00', 6, false, '2022-11-07 10:30:00', true, '2022-11-07 10:30:00')"
 
-    def orderToString (order: Order) : String = s"insert into orders values(${order.id}, ${order.dishTypeId}, '${order.dishTypeName}', '${order.orderTime.toString()}', '${order.expectedTime.toString()}', ${order.tableNumber}, ${order.fulfilled}, '${order.fulfilledTime.toString()}', ${order.cancelled}, '${order.cancelledTime.toString()}')"
+    def orderToString (order: Order) : String = s"insert into orders values(${order.id}, '${order.dishTypeName}', '${order.orderTime.toString()}', '${order.expectedTime.toString()}', ${order.tableNumber}, ${order.fulfilled}, '${order.fulfilledTime.toString()}', ${order.cancelled}, '${order.cancelledTime.toString()}')"
 
     // TODO - fix the interpolation.
     // val inserts: Seq[DBIO[Int]] = Seq(
@@ -64,14 +64,13 @@ class OrdersSpec extends AnyWordSpec with SequentialNestedSuiteExecution with Be
     //     orders.dropSchema()
     // }
 
-    "Orders" should {
+    "Orders DB layer" should {
         "read an order from orders table" in {
             val orders = setUpOders(db)
 
             noException should be thrownBy orders.read(fulfilledOrder.id).futureValue.get
             orders.read(fulfilledOrder.id).futureValue.get should have (
                 'id (fulfilledOrder.id),
-                'dishTypeId (fulfilledOrder.dishTypeId),
                 'dishTypeName (fulfilledOrder.dishTypeName),
                 'orderTime (fulfilledOrder.orderTime),
                 'expectedTime (fulfilledOrder.expectedTime),
@@ -109,7 +108,6 @@ class OrdersSpec extends AnyWordSpec with SequentialNestedSuiteExecution with Be
             allOrders.size should equal(1)
             allOrders.head should have (
                 'id (fulfilledOrder.id),
-                'dishTypeId (fulfilledOrder.dishTypeId),
                 'dishTypeName (fulfilledOrder.dishTypeName),
                 'orderTime (fulfilledOrder.orderTime),
                 'expectedTime (fulfilledOrder.expectedTime),
@@ -146,7 +144,6 @@ class OrdersSpec extends AnyWordSpec with SequentialNestedSuiteExecution with Be
             allOrders.size should equal(1)
             allOrders.head should have (
                 'id (cancelledOrderTable6.id),
-                'dishTypeId (cancelledOrderTable6.dishTypeId),
                 'dishTypeName (cancelledOrderTable6.dishTypeName),
                 'orderTime (cancelledOrderTable6.orderTime),
                 'expectedTime (cancelledOrderTable6.expectedTime),
@@ -178,7 +175,6 @@ class OrdersSpec extends AnyWordSpec with SequentialNestedSuiteExecution with Be
 
             val newOrder = Order(
                 1,
-                4,
                 "Fries", 
                 LocalDateTime.of(2022, 12, 25, 12, 30),
                 LocalDateTime.of(2022, 12, 25, 12, 40),
@@ -193,7 +189,6 @@ class OrdersSpec extends AnyWordSpec with SequentialNestedSuiteExecution with Be
 
             orders.read(1).futureValue.get should have (
                 'id (newOrder.id),
-                'dishTypeId (newOrder.dishTypeId),
                 'dishTypeName (newOrder.dishTypeName),
                 'orderTime (newOrder.orderTime),
                 'expectedTime (newOrder.expectedTime),
@@ -202,6 +197,62 @@ class OrdersSpec extends AnyWordSpec with SequentialNestedSuiteExecution with Be
                 'fulfilledTime (newOrder.fulfilledTime),
                 'cancelled (newOrder.cancelled),
                 'cancelledTime (newOrder.cancelledTime),
+            )
+            orders.dropSchema.futureValue
+        }
+        
+        "insert multiple orders" in {
+            val orders = setUpOders(db)
+
+            val newOrder1 = Order(
+                1,
+                "Fries", 
+                LocalDateTime.of(2022, 12, 25, 12, 30),
+                LocalDateTime.of(2022, 12, 25, 12, 40),
+                9,
+                false,
+                None,
+                false,
+                None
+            )
+
+            val newOrder2 = Order(
+                2,
+                "Chicken Nuggets", 
+                LocalDateTime.of(2022, 12, 25, 12, 30),
+                LocalDateTime.of(2022, 12, 25, 12, 40),
+                12,
+                false,
+                None,
+                false,
+                None
+            )
+
+            val ordersToInsert = Seq(newOrder1, newOrder2)
+
+            noException should be thrownBy orders.insertAll(ordersToInsert).futureValue
+
+            orders.read(1).futureValue.get should have (
+                'id (newOrder1.id),
+                'dishTypeName (newOrder1.dishTypeName),
+                'orderTime (newOrder1.orderTime),
+                'expectedTime (newOrder1.expectedTime),
+                'tableNumber (newOrder1.tableNumber),
+                'fulfilled (newOrder1.fulfilled),
+                'fulfilledTime (newOrder1.fulfilledTime),
+                'cancelled (newOrder1.cancelled),
+                'cancelledTime (newOrder1.cancelledTime),
+            )
+            orders.read(2).futureValue.get should have (
+                'id (newOrder2.id),
+                'dishTypeName (newOrder2.dishTypeName),
+                'orderTime (newOrder2.orderTime),
+                'expectedTime (newOrder2.expectedTime),
+                'tableNumber (newOrder2.tableNumber),
+                'fulfilled (newOrder2.fulfilled),
+                'fulfilledTime (newOrder2.fulfilledTime),
+                'cancelled (newOrder2.cancelled),
+                'cancelledTime (newOrder2.cancelledTime),
             )
             orders.dropSchema.futureValue
         }
@@ -234,16 +285,6 @@ class OrdersSpec extends AnyWordSpec with SequentialNestedSuiteExecution with Be
                 'cancelled (cancelledVal),
                 'cancelledTime (overrides.cancelledTime),
             )
-            orders.dropSchema.futureValue
-        }
-
-        "delete an order" in {
-            val orders = setUpOders(db)
-
-            noException should be thrownBy orders.delete(fulfilledOrder.id).futureValue
-
-            orders.read(fulfilledOrder.id).futureValue should equal (None)
-  
             orders.dropSchema.futureValue
         }
     }

@@ -22,3 +22,8 @@ final case class Order(
 	cancelled: Boolean,
 	cancelledtime: LocalDate
 )
+
+final case class MakeOrderReq(
+	dishTypeName: String,
+	tableNumber: Int
+)

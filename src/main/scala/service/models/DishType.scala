@@ -1,16 +1,15 @@
 package service.models
 
+import java.time.Duration
+
+object DishTypeName extends Enumeration {
+    type DishTypeName = Value
+    val ChickenNuggets = "CHICKEN_NUGGETS"
+    val Fries = "FRIES"
+}
+
 final case class DishType(
-    id: Long,
-    typeName: service.models.DishTypeName,
+    typeName: String,
     maxCookingTimeInMin: Int
 )
 
-class DishTypeName extends Enumeration {
-    type DishTypeName = Value
-    val ChickenNuggets = Value("CHICKEN_NUGGETS")
-    val Fries = Value("FRIES")
-}
-
-
-// get name from Typename function.
