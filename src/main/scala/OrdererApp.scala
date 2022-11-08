@@ -39,7 +39,8 @@ final case class OrderServiceDependencies (
 )
 
 final case class HandlerDependencies(
-	ordersService: OrderService
+	ordersService: OrderService,
+	system: ActorSystem
 	// pass any config, logging etc here
 )
 
@@ -74,10 +75,10 @@ object OrdererApp extends App {
 	// Actors have unique addresses & mailboxes and messages will remain in
 	// the mailboxes until the actor is ready to process it. When an actor is ready
 	// it will pick one message at a time and execute it's behaviour.
-	// The ActorMaterializer creates actors 
+	// The ActorMaterializer creates actors
 	implicit val materializer : ActorMaterializer = ActorMaterializer()
 
-	val handlerDeps = new HandlerDependencies(orderService)
+	val handlerDeps = new HandlerDependencies(orderService, system)
 	val handler = new OrderHandler(handlerDeps)
 
 	val api = handler.routes
