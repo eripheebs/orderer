@@ -8,11 +8,11 @@ import akka.util.Timeout
 import scala.util.{ Failure, Success }
 
 import scala.language.postfixOps
+// TODO remove wildcard imports in favor of specific imports.
 import scala.concurrent.duration._
 import akka.util.Timeout
 import akka.pattern.ask
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.model.StatusCodes.{NotFound, OK, BadRequest, Created}
@@ -21,7 +21,6 @@ import service.models.{MakeOrderReq => ServiceMakeOrderReq}
 import service.models.{Order, MakeOrderReq => ServiceMakeOrderReq}
 import orderer.HandlerDependencies
 import scala.concurrent.duration.Duration
-
 
 // Request and Response classes
 case class MakeOrdersRequest(orders: Seq[ServiceMakeOrderReq])
@@ -43,7 +42,7 @@ final case class FulfillOrderByIdMessage(id: Int)
 // the mailboxes until the actor is ready to process it. When an actor is ready
 // it will pick one message at a time and execute it's behaviour.
 class OrderActor(deps: HandlerDependencies) extends Actor {
-	implicit val ec = context.dispatcher
+	implicit val ec = deps.system.dispatcher
 	implicit val timeout: Timeout = 20 seconds
 
 	def receive = {

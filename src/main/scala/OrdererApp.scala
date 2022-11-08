@@ -20,7 +20,9 @@ import akka.http.scaladsl.Http
 import scala.io.StdIn
 import com.typesafe.config._
 
-// todo: extract to own file
+// todo: extract Config class
+// make logging, actor system behaviour etc all configurable
+// & seperate from the libraries. 
 final case class AppConfig() {
 	val env = if (System.getenv("APP_ENV") == null) "development" else System.getenv("APP_ENV")
 
@@ -32,7 +34,7 @@ final case class Services (
 	orders: OrderService
 )
 
-// Dependencies to be passed to the order service.
+// Dependencies to be injected to the order service.
 // This could inherit from a ServiceDependencies class that
 // has Logging, Context, ETC.
 final case class OrderServiceDependencies (
@@ -78,7 +80,9 @@ object OrdererApp extends App {
 	// TODO add config to application.conf
 	// Create the Akka actor system.
 	implicit val system = ActorSystem()
-	// implicit ExecutionContext
+	// The ExecutionContext is used to configure how and on which
+	// thread pools Futures will run,so we'll pass down the dispatcher
+	// if we need to declare the execution policy elsewhere in the app.
 	implicit val ec: ExecutionContextExecutor = system.dispatcher
 	// Actors have unique addresses & mailboxes and messages will remain in
 	// the mailboxes until the actor is ready to process it. When an actor is ready
@@ -108,7 +112,4 @@ object OrdererApp extends App {
 			db.close()
 			system.terminate()
 		}) // and shutdown when done
-
-	// for testing
-	def terminate() = system.terminate()
 }
