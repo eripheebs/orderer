@@ -41,9 +41,10 @@ libraryDependencies ++= Seq(
     // akka json support
     "com.typesafe.akka" %% "akka-http-spray-json" % "10.4.0",
     // Testing
-    "com.typesafe.akka" %% "akka-testkit" % "2.7.0" % "test",
+    "com.typesafe.akka" %% "akka-testkit" % "2.7.0" % Test,
     "org.scalatest" %% "scalatest" % "3.2.14" % Test,
-    "org.scalamock" %% "scalamock" % "5.1.0" % Test
+    "org.scalamock" %% "scalamock" % "5.1.0" % Test,
+    "org.scalaj" %% "scalaj-http" % "2.4.2"
 )
 
 // Here, `libraryDependencies` is a set of dependencies, and by using `+=`,

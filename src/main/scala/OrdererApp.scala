@@ -18,10 +18,15 @@ import handler.OrderHandler
 import scala.concurrent.Future
 import akka.http.scaladsl.Http
 import scala.io.StdIn
+import com.typesafe.config._
 
 // todo: extract to own file
-// todo: add config
-final case class AppConfig ()
+final case class AppConfig() {
+	val env = if (System.getenv("APP_ENV") == null) "development" else System.getenv("APP_ENV")
+
+	val conf = ConfigFactory.load()
+	def getConfig() = conf.getConfig(env)
+}
 
 final case class Services (
 	orders: OrderService
@@ -49,9 +54,12 @@ object OrdererApp extends App {
 
 	// SET UP DB LAYER
 
+	val config = new AppConfig()
+
 	// todo make this more configurable
 	// TODO use ENV for db config resolution.
-	val db = Database.forConfig("postgres")
+	val dbConfigName = config.getConfig().getString("dbConfig")
+	val db = Database.forConfig(dbConfigName)
 	
 	val ordersDb = new OrderDao(db)
 	Await.result(ordersDb.createSchema, Duration.Inf)
@@ -95,9 +103,12 @@ object OrdererApp extends App {
 
 	StdIn.readLine() // let it run until user presses return
 	bindingFuture
-      .flatMap(_.unbind()) // trigger unbinding from the port
-      .onComplete(_ => {
-	  	db.close()
-	  	system.terminate()
-	  }) // and shutdown when done
+		.flatMap(_.unbind()) // trigger unbinding from the port
+		.onComplete(_ => {
+			db.close()
+			system.terminate()
+		}) // and shutdown when done
+
+	// for testing
+	def terminate() = system.terminate()
 }

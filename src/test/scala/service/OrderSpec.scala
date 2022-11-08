@@ -155,7 +155,7 @@ class OrdersSpec extends AnyWordSpec with Matchers with MockFactory with ScalaFu
 
             (mockDb.read _).expects(id).returning(Future.successful(Some(dbOrder)))
 
-            val returnedOrder = orders.getOrdersById(id).futureValue
+            val returnedOrder = orders.getOrderById(id).futureValue
             returnedOrder should have (
                 'id (dbOrder.id),
                 'dishTypeName (dbOrder.dishTypeName),
@@ -187,7 +187,7 @@ class OrdersSpec extends AnyWordSpec with Matchers with MockFactory with ScalaFu
             (mockDb.read _).expects(id).returning(Future.successful(None))
 
              the [Exception] thrownBy {
-                orders.getOrdersById(id).futureValue
+                orders.getOrderById(id).futureValue
                 // TODO fix this so it doesnt have ot show the future part of the error.
             } should have message "The future returned an exception of type: java.lang.Exception, with message: Attempting to get order that does not exist."
         }

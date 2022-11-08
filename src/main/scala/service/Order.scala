@@ -33,7 +33,7 @@ class OrderService(deps: OrderServiceDependencies) {
         order.cancelledTime
     ))))
 
-    def getOrdersById(id: Int): Future[Order] = deps.db.read(id).flatMap(order => order match {
+    def getOrderById(id: Int): Future[Order] = deps.db.read(id).flatMap(order => order match {
         case Some(order) => Future.successful(Order(order.id,
             order.dishTypeName,
             order.orderTime,
