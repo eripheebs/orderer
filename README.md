@@ -4,7 +4,7 @@ This app intends to be an ordering tool for a restaurant.
 The app is split into Handler, Service and Database layers. The app uses Akka's libraries to implement the Actor model as the concurrency model.
 The app uses postgresql db - the data structure for this use case would generally be well defined from the start and unlikely to change often. 
 
-If I had more time, I would have kept the client code behind interfaces so that the app would be more agnostic of the clients I used, especially the akka toolkits because they are very integrated into the code now and would be annoying to extract. I also would have fully unit tested the Handler layer - I was running out of time when I got to the handler layer and prioritised getting it working e2e at the very end. I would have cleaned up the injected dependencies to include more configuration, a better logger, and passed clients that are more generic. I also would have liked to have been more explicit with error catching, logging and throwing at each layer. 
+If I had more time, I would have kept the client code behind interfaces so that the app would be more agnostic of the clients I used, especially the akka toolkits because they are very integrated into the code now and would take more effort to extract. I also would have fully unit tested the Handler layer - I was running out of time when I got to the handler layer and prioritised getting it working e2e at the very end. I would have cleaned up the injected dependencies to include more configuration, a better logger, and passed clients that are more generic. I also would have liked to have been more explicit with error catching, logging and throwing at each layer. :)
 
 ### Set up to run locally
 
@@ -103,7 +103,6 @@ UpdateOrderRequest
 ```
 curl -X PUT -d '{"fulfilled": true }' -H "Content-Type: application/json" http://localhost:8080/orders/3
 ```
-
 
 
 We can simulate many concurrent incoming requests by running the following. It will run the curl command 100 times (max jobs in parallel can be changed by changing the -P param). I would have make a client to simulate this but I do not have time
