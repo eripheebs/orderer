@@ -10,8 +10,9 @@ If I had more time, I would have kept the client code behind interfaces so that 
 
 - build tooling  `sbt` (https://www.scala-sbt.org)
 - compatibility: Scala v 2.13.7
-- the config for the postgres DB to point to is in `main/resources/application.conf`
+- the config for that points to the DBs is in `main/resources/application.conf`
 - install postgresql. For installation instructions, see: http://www.postgresql.org/download/. or for homebrew users: https://wiki.postgresql.org/wiki/Homebrew
+- create the development and test databases
 
 ```
 $ psql postgres
@@ -39,6 +40,7 @@ $ sbt test
 
 Return Object
 I interpreted deleted as either cancelled or fulfilled Orders as that is what woud be most important to keep track of, so they are properties on the Order.
+
 ```
     Order {
         id: Long,
