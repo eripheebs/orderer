@@ -1,6 +1,7 @@
 package handler
 
 import akka.actor.typed.{ActorRef, Behavior}
+import akka.actor.SupervisorStrategy.Stop
 import akka.actor.{Actor, Props}
 import akka.actor.typed.scaladsl.Behaviors
 import akka.pattern.{ask, pipe}
@@ -74,13 +75,19 @@ class OrderHandler(deps: HandlerDependencies) extends OrderMarshaller {
 					// POST /orders
 					post {
 						entity(as[MakeOrdersRequest]) { params =>
-							// TODO: create a wrapper class that generates the passed actor type that i can wrap the routes in.
+							// TODO: create a wrapper class that generates the passed actor type that i can wrap the routes in
+							// then when request is complete the actor will stop itself.
 							val orderActor = deps.system.actorOf(Props.create(classOf[OrderActor], deps))
 							val ordersFuture: Future[Seq[Int]] = ask(orderActor, MakeOrdersMessage(params.orders)).mapTo[Seq[Int]]
 							onComplete(ordersFuture) {
-								case Success(ids) => complete(Created, MakeOrdersResponse(ids.asInstanceOf[Seq[Int]]))
-								// Here error types could be broken down and specific user friendly errors returned
-								case Failure(ex) => complete(BadRequest)
+								(outcome) => {
+									deps.system.stop(orderActor)
+									outcome match {
+										case Success(ids) => complete(Created, MakeOrdersResponse(ids.asInstanceOf[Seq[Int]]))
+										// Here error types could be broken down and specific user friendly errors returned
+										case Failure(ex) => complete(BadRequest)
+									}
+								}
 							}
 						}
 					},
@@ -90,12 +97,17 @@ class OrderHandler(deps: HandlerDependencies) extends OrderMarshaller {
 							val orderActor = deps.system.actorOf(Props.create(classOf[OrderActor], deps))
 							val orderFuture: Future[Order] = ask(orderActor, GetOrderByIdMessage(id.toInt)).mapTo[Order]
 							onComplete(orderFuture) {
-								case Success(order) => complete(OK, GetOrderByIdResponse(order.asInstanceOf[Order]))
-								case Failure(ex) => {
-									if (ex.getMessage() == "Attempting to get order that does not exist") {
-										complete(NotFound)
-									} else {
-										complete(BadRequest)
+								(outcome) => {
+									deps.system.stop(orderActor)
+									outcome match {
+										case Success(order) => complete(OK, GetOrderByIdResponse(order.asInstanceOf[Order]))
+										case Failure(ex) => {
+											if (ex.getMessage() == "Attempting to get order that does not exist") {
+												complete(NotFound)
+											} else {
+												complete(BadRequest)
+											}
+										}
 									}
 								}
 							}
@@ -106,8 +118,13 @@ class OrderHandler(deps: HandlerDependencies) extends OrderMarshaller {
 							val orderActor = deps.system.actorOf(Props.create(classOf[OrderActor], deps))
 							val ordersFuture: Future[Seq[Order]] = ask(orderActor, GetOrdersByTableNumberMessage(tableNumber.toInt)).mapTo[Seq[Order]]
 							onComplete(ordersFuture) {
-								case Success(order) => complete(OK, GetOrdersByTableNumberResponse(order.asInstanceOf[Seq[Order]]))
-								case Failure(ex) => complete(BadRequest)
+								(outcome) => {
+									deps.system.stop(orderActor)
+									outcome match {
+										case Success(order) => complete(OK, GetOrdersByTableNumberResponse(order.asInstanceOf[Seq[Order]]))
+										case Failure(ex) => complete(BadRequest)
+									}
+								}
 							}
 					},
 					// PUT /orders/{id}
@@ -118,12 +135,17 @@ class OrderHandler(deps: HandlerDependencies) extends OrderMarshaller {
 								val orderActor = deps.system.actorOf(Props.create(classOf[OrderActor], deps))
 								val idFuture: Future[Int] = ask(orderActor, FulfillOrderByIdMessage(id.toInt)).mapTo[Int]
 								onComplete(idFuture) {
-									case Success(iD) => complete(OK, FulfillOrderByIdResponse(id.asInstanceOf[Int]))
-									case Failure(ex) => {
-										if (ex.getMessage() == "Attempting to update Order that does not exist") {
-											complete(NotFound)
-										} else {
-											complete(BadRequest)
+									(outcome) => {
+										deps.system.stop(orderActor)
+										outcome match {
+											case Success(iD) => complete(OK, FulfillOrderByIdResponse(id.asInstanceOf[Int]))
+											case Failure(ex) => {
+												if (ex.getMessage() == "Attempting to update Order that does not exist") {
+													complete(NotFound)
+												} else {
+													complete(BadRequest)
+												}
+											}
 										}
 									}
 								}
