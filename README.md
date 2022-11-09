@@ -4,7 +4,7 @@ This app intends to be an ordering tool for a restaurant.
 The app is split into Handler, Service and Database layers. The app uses Akka's libraries to implement the Actor model as the concurrency model.
 The app uses postgresql db - the data structure for this use case would generally be well defined from the start and unlikely to change often. 
 
-If I had more time, I would have kept the client code behind interfaces so that the app would be more agnostic of the clients I used, especially the akka toolkits because they are very integrated into the code now and would take more effort to extract. I also would have fully unit tested the Handler layer - I was running out of time when I got to the handler layer and prioritised getting it working e2e at the very end. I would have cleaned up the injected dependencies to include more configuration, a better logger, and passed clients that are more generic. I also would have liked to have been more explicit with error handling at each layer. :)
+If I had more time, I would have kept the client code behind interfaces so that the app would be more agnostic of the clients I used, especially the akka toolkits because they are very integrated into the code now and would take more effort to extract. I also would have adding more robust unit testing in the Handler layer - I was running out of time when I got to the handler layer so I prioritised testing the happy paths. I would have cleaned up the injected dependencies to include more configuration, a better logger, and passed clients that are more generic. I also would have liked to have been more explicit with error handling at each layer, and spent time on helpful api error responses. :)
 
 ### Set up to run locally
 

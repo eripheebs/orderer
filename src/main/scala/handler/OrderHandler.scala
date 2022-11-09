@@ -133,8 +133,7 @@ class OrderHandler(deps: HandlerDependencies) extends OrderMarshaller {
 				)
 			}
 		)
-  }
+	}
 
-  
-  val routes: Route = orderRoutes
+	val routes: Route = orderRoutes
 }

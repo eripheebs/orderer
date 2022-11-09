@@ -59,7 +59,7 @@ class OrdersSpec extends AnyWordSpec with SequentialNestedSuiteExecution with Be
         orders
     }
 
-    // TODO: figure out how to use this with before/after
+    // TODO: figure out how to use this with before/after each
     // def dropOrders(orders: OrderDao) = {
     //     orders.dropSchema()
     // }
