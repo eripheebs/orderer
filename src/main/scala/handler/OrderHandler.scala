@@ -61,8 +61,6 @@ class OrderActor(deps: HandlerDependencies) extends Actor {
 }
 
 class OrderHandler(deps: HandlerDependencies) extends OrderMarshaller {
-	val orderActor = deps.system.actorOf(Props.create(classOf[OrderActor], deps))
-
 	// Todo pass timeout through deps.
 	implicit val timeout: Timeout = 20 seconds
 
@@ -76,6 +74,8 @@ class OrderHandler(deps: HandlerDependencies) extends OrderMarshaller {
 					// POST /orders
 					post {
 						entity(as[MakeOrdersRequest]) { params =>
+							// TODO: create a wrapper class that generates the passed actor type that i can wrap the routes in.
+							val orderActor = deps.system.actorOf(Props.create(classOf[OrderActor], deps))
 							val ordersFuture: Future[Seq[Int]] = ask(orderActor, MakeOrdersMessage(params.orders)).mapTo[Seq[Int]]
 							onComplete(ordersFuture) {
 								case Success(ids) => complete(Created, MakeOrdersResponse(ids.asInstanceOf[Seq[Int]]))
@@ -87,6 +87,7 @@ class OrderHandler(deps: HandlerDependencies) extends OrderMarshaller {
 					// GET /orders/{id}
 					(get & path(LongNumber)) {
 						id =>
+							val orderActor = deps.system.actorOf(Props.create(classOf[OrderActor], deps))
 							val orderFuture: Future[Order] = ask(orderActor, GetOrderByIdMessage(id.toInt)).mapTo[Order]
 							onComplete(orderFuture) {
 								case Success(order) => complete(OK, GetOrderByIdResponse(order.asInstanceOf[Order]))
@@ -102,6 +103,7 @@ class OrderHandler(deps: HandlerDependencies) extends OrderMarshaller {
 					// GET /orders/by-table-number/{tableNumber}
 					(get & path("by-table-number" / LongNumber)) {
 						tableNumber =>
+							val orderActor = deps.system.actorOf(Props.create(classOf[OrderActor], deps))
 							val ordersFuture: Future[Seq[Order]] = ask(orderActor, GetOrdersByTableNumberMessage(tableNumber.toInt)).mapTo[Seq[Order]]
 							onComplete(ordersFuture) {
 								case Success(order) => complete(OK, GetOrdersByTableNumberResponse(order.asInstanceOf[Seq[Order]]))
@@ -113,8 +115,8 @@ class OrderHandler(deps: HandlerDependencies) extends OrderMarshaller {
 					(put & path(LongNumber)) {
 						id => entity(as[UpdateOrderRequest]) { params => params.fulfilled match {
 							case Some(true) => {
+								val orderActor = deps.system.actorOf(Props.create(classOf[OrderActor], deps))
 								val idFuture: Future[Int] = ask(orderActor, FulfillOrderByIdMessage(id.toInt)).mapTo[Int]
-								println(idFuture.value)
 								onComplete(idFuture) {
 									case Success(iD) => complete(OK, FulfillOrderByIdResponse(id.asInstanceOf[Int]))
 									case Failure(ex) => {

@@ -29,8 +29,8 @@ class OrderHandlerSpec extends AnyWordSpec with Matchers with ScalatestRouteTest
 	val deps = HandlerDependencies(mockOrderService, system)
 	val handler = new OrderHandler(deps)
 	val routes = handler.routes
-    val pretendOrder = Order(1, DishTypeName.ChickenNuggets, LocalDateTime.of(2022, 11, 7, 10, 30), LocalDateTime.of(2022, 11, 7, 10, 30), 1, false, None, false, None)
-    val pretendOrder2 = Order(1, DishTypeName.Fries, LocalDateTime.of(2022, 11, 7, 10, 30), LocalDateTime.of(2022, 11, 7, 10, 30), 5, false, None, false, None)
+	val pretendOrder = Order(1, DishTypeName.ChickenNuggets, LocalDateTime.of(2022, 11, 7, 10, 30), LocalDateTime.of(2022, 11, 7, 10, 30), 1, false, None, false, None)
+	val pretendOrder2 = Order(1, DishTypeName.Fries, LocalDateTime.of(2022, 11, 7, 10, 30), LocalDateTime.of(2022, 11, 7, 10, 30), 5, false, None, false, None)
 
 	override def afterAll(): Unit = {
 		TestKit.shutdownActorSystem(system)
