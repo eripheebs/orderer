@@ -110,7 +110,7 @@ curl -X PUT -d '{"fulfilled": true }' -H "Content-Type: application/json" http:/
 We can simulate many concurrent incoming requests by running the following. It will run the curl command 100 times (max jobs in parallel can be changed by changing the -P param). Ideally I would have made a client to simulate this but I ran out of time :)
 
 ```
-$ seq 1 100 | xargs -Iname -P 10 curl -X POST -d '{"orders": [ {"dishTypeName": "CHICKEN_NUGGETS", "tableNumber": 1} ] }' -H "Content-Type: application/json" http://localhost:8080/orders GET http://localhost:8080/orders/1 
+$ seq 1 100 | xargs -Iname -P 10 curl -X POST -d '{"orders": [ {"dishTypeName": "CHICKEN_NUGGETS", "tableNumber": 1} ] }' -H "Content-Type: application/json" http://localhost:8080/orders
 ```
 
 ### File Structure
